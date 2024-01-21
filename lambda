@@ -1,0 +1,38 @@
+import boto3
+import datetime
+
+start_time = datetime.time(11, 00 ) 
+stop_time = datetime.time(5, 00)
+
+def get_all_instances():
+    ec2 = boto3.resource('ec2')
+    instances = ec2.instances.all()
+    return [instance.id for instance in instances]
+
+def is_start_time():
+    current_time = datetime.datetime.now().time()
+    return start_time <= current_time <= stop_time
+
+def start_instances(instance_ids):
+    if instance_ids:
+        ec2 = boto3.client('ec2')
+        ec2.start_instances(InstanceIds=instance_ids)
+
+def is_stop_time():
+    current_time = datetime.datetime.now().time()
+    return current_time >= stop_time
+
+def stop_instances(instance_ids):
+    if instance_ids:
+        ec2 = boto3.client('ec2')
+        ec2.stop_instances(InstanceIds=instance_ids)
+
+def lambda_handler(event, context):
+    instance_ids = get_all_instances()
+    if is_start_time():
+        start_instances(instance_ids)
+    elif is_stop_time():
+        stop_instances(instance_ids)
+    else:
+        print("Not time to start or stop instances.")
+
